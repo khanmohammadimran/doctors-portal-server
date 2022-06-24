@@ -22,6 +22,7 @@ async function run() {
 
         const serviceCollection = client.db('doctors_portal').collection('services');
         const bookingCollection = client.db('doctors_portal').collection('bookings');
+        const userCollection = client.db('doctors_portal').collection('user');
 
 
         app.get('/service', async (req, res) => {
@@ -56,6 +57,28 @@ async function run() {
             }
             const result = await bookingCollection.insertOne(booking);
             return res.send({ success: true, result });
+        })
+
+
+        // Appointment showed to the Dashboard
+        app.get('/booking', async (req, res) => {
+            const patient = req.query.patient
+            const query = { patient: patient };
+            const bookings = await bookingCollection.find(query).toArray();
+            res.send(bookings)
+        })
+
+        // Contain user to user-collection
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };;
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
         })
     }
     finally {
